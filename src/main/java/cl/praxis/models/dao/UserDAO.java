@@ -12,4 +12,5 @@ public interface UserDAO {
 	void delete(int id);
 	User validateLogin(String correo, String password);
 	boolean isEmailRegistered(String email);
+	List<User> readAllWithDirecciones();
 }

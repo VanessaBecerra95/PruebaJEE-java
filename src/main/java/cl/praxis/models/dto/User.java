@@ -1,5 +1,6 @@
 package cl.praxis.models.dto;
 import java.time.LocalDate;
+import java.util.List;
 
 public class User {
 	private int id;
@@ -10,6 +11,8 @@ public class User {
 	private String password;
 	private int peso;
 	private LocalDate updatedAt;
+	private Direcciones direccion;
+	private List<RolesUsuarios> roles;
 	
 	public User() {
 		super();
@@ -93,6 +96,18 @@ public class User {
 		this.updatedAt = updatedAt;
 	}
 
+    public Direcciones getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(Direcciones direccion) {
+        this.direccion = direccion;
+    }
+    
+    public void setRoles(List<RolesUsuarios> roles) {
+        this.roles = roles;
+    }
+    
 	@Override
 	public String toString() {
 		return "User [id=" + id + ", correo=" + correo + ", createdAt=" + createdAt + ", nick=" + nick + ", nombre="

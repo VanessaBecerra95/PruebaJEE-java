@@ -3,6 +3,7 @@ package cl.praxis.controllers;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,8 +12,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import cl.praxis.models.dao.RolesUsuariosDAOImpl;
 import cl.praxis.models.dao.UserDAO;
 import cl.praxis.models.dao.UserDAOImpl;
+import cl.praxis.models.dto.RolesUsuarios;
 import cl.praxis.models.dto.User;
 import cl.praxis.models.db.Db;
 
@@ -34,24 +37,32 @@ public class LoginController extends HttpServlet {
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		String correo = request.getParameter("correo");
-		String password = request.getParameter("password");
+	        throws ServletException, IOException {
+	    String correo = request.getParameter("correo");
+	    String password = request.getParameter("password");
 
-		try (Connection connection = Db.getConnect()) {
-			User usuario = userDAO.validateLogin(correo, password);
+	    try (Connection connection = Db.getConnect()) {
+	        User usuario = userDAO.validateLogin(correo, password);
 
-			if (usuario != null) {
-				HttpSession session = request.getSession();
-				System.out.println("Almacenando usuario en sesión: " + usuario);
-				session.setAttribute("usuario", usuario);
-				response.sendRedirect("home.jsp");
-			} else {
-				request.setAttribute("error", "Correo o contraseña incorrectos");
-				request.getRequestDispatcher("error.jsp").forward(request, response);
-			}
-		} catch (SQLException e) {
-			throw new ServletException("Error al autenticar el usuario", e);
-		}
+	        if (usuario != null) {
+	            RolesUsuariosDAOImpl rolesUsuariosDAO = new RolesUsuariosDAOImpl(connection);
+	            List<RolesUsuarios> roles = rolesUsuariosDAO.readAllByUsuarioID(usuario.getId());
+	            usuario.setRoles(roles);
+
+	            HttpSession session = request.getSession();
+	            System.out.println("Almacenando usuario en sesión: " + usuario);
+	            session.setAttribute("usuario", usuario);
+
+	            List<User> usuarios = userDAO.readAllWithDirecciones();
+	            session.setAttribute("usuarios", usuarios);
+
+	            response.sendRedirect("home.jsp");
+	        } else {
+	            request.setAttribute("error", "Correo o contraseña incorrectos");
+	            request.getRequestDispatcher("error.jsp").forward(request, response);
+	        }
+	    } catch (SQLException e) {
+	        throw new ServletException("Error al autenticar el usuario", e);
+	    }
 	}
 }
